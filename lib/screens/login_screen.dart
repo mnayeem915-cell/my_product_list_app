@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -14,7 +15,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _submit() {
+// _submit ফাংশনটি এভাবে লিখো:
+  void _submit() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields'), backgroundColor: Colors.red),
@@ -22,15 +24,40 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // আপাতত ডামি লগইন (পরে Firebase/Backend এ কানেক্ট করবো)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_isLogin ? 'Login Successful!' : 'Account Created Successfully!'),
-        backgroundColor: Colors.green,
-      ),
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    String? errorMessage;
+
+    // লোডিং দেখানোর জন্য
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
-    Navigator.pop(context); // প্রোফাইল স্ক্রিনে ফিরে যাবে
+    if (_isLogin) {
+      errorMessage = await authProvider.login(_emailController.text.trim(), _passwordController.text.trim());
+    } else {
+      errorMessage = await authProvider.signUp(_emailController.text.trim(), _passwordController.text.trim());
+    }
+
+    if (!mounted) return;
+    Navigator.pop(context); // লোডিং ডায়ালগ বন্ধ করা
+
+    if (errorMessage == null) {
+      // সফল হলে
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_isLogin ? 'Login Successful!' : 'Account Created! Please check your email if verification is on.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context); // প্রোফাইল স্ক্রিনে ফিরে যাবে
+    } else {
+      // এরর হলে
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override
