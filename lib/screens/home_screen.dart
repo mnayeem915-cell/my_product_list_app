@@ -157,31 +157,34 @@ class _HomeScreenState extends State<HomeScreen> {
             // প্রোডাক্ট গ্রিড
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              sliver: productProvider.isLoading
-                  ? const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()))
-                  : productProvider.products.isEmpty
-                  ? const SliverToBoxAdapter(child: Center(child: Padding(padding: EdgeInsets.all(20.0), child: Text('No products found in the database.'))))
-                  : SliverGrid(
+              sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.70,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                  childAspectRatio: 2.5, // ক্যাটাগরি কার্ড লম্বা হবে
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
                 ),
                 delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                    final product = productProvider.products[index];
-                    return ProductCard(
-                      product: product,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ProductDetailScreen(product: product)),
-                        );
-                      },
+                    final category = categoryProvider.categories[index];
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 5)],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          // আইকন (ডামি)
+                          Icon(Icons.category, color: Theme.of(context).primaryColor),
+                        ],
+                      ),
                     );
                   },
-                  childCount: productProvider.products.length,
+                  childCount: categoryProvider.categories.length,
                 ),
               ),
             ),

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../providers/product_provider.dart';
-import '../../../providers/category_provider.dart'; // ড্রয়ার বা অন্য জায়গায় লাগতে পারে
-import '../../../providers/banner_provider.dart';
-import '../../../widgets/product_card.dart';
-import '../../product_detail_screen.dart';
-import '../widgets/customer_web_header.dart'; // নতুন হেডার
-import '../widgets/customer_web_footer.dart'; // নতুন ফুটার
+import '../../providers/product_provider.dart';
+import '../../providers/category_provider.dart';
+import '../../providers/banner_provider.dart';
+import '../../widgets/product_card.dart'; // তোমার প্রোডাক্ট কার্ড
+import '../../screens/product_detail_screen.dart'; // প্রোডাক্ট ডিটেইলসের পাথ ঠিক করে নিও
+import '../widgets/customer_web_header.dart';
+import '../widgets/category_nav_bar.dart';
+import '../widgets/customer_web_banner.dart';
+import '../widgets/customer_web_footer.dart';
+import '../widgets/web_category_slider.dart';
 
 class CustomerWebScreen extends StatefulWidget {
   const CustomerWebScreen({super.key});
@@ -29,47 +32,41 @@ class _CustomerWebScreenState extends State<CustomerWebScreen> {
   @override
   Widget build(BuildContext context) {
     final productProvider = Provider.of<ProductProvider>(context);
-    final bannerProvider = Provider.of<BannerProvider>(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // ১. নতুন হেডার (যেখানে ক্যাটাগরি বারও আছে)
+          // ১. হেডার (সবচেয়ে উপরে)
           const CustomerWebHeader(),
 
-          // ২. মূল কন্টেন্ট
+          // ২. ক্যাটাগরি বার (হেডারের ঠিক নিচে)
+          const CategoryNavBar(),
+
+          // ৩. মূল স্ক্রলেবল কন্টেন্ট
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // ব্যানার
-                  Padding(
-                    padding: const EdgeInsets.all(40.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: bannerProvider.bannerUrls.isNotEmpty
-                          ? Image.network(bannerProvider.bannerUrls.first, height: 400, width: double.infinity, fit: BoxFit.cover)
-                          : Container(height: 400, color: Colors.grey[300], child: const Center(child: Text('Banner'))),
-                    ),
-                  ),
+                  // ১. নতুন স্লাইডার + স্থির ব্যানার
+                  const CustomerWebBanner(),
 
-                  // প্রোডাক্ট হেডিং
+                  // ২. নতুন Featured Categories (অনুভূমিক)
+                  const WebCategorySlider(),
+
+                  // ৩. প্রোডাক্ট হেডিং
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 10.0),
+                    padding: const EdgeInsets.only(left: 40.0, right: 40.0, top: 40.0, bottom: 10.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Top Selling Products', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                        TextButton(
-                          onPressed: () {},
-                          child: Text('See All', style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 16)),
-                        ),
+                        TextButton(onPressed: () {}, child: Text('See All', style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 16))),
                       ],
                     ),
                   ),
 
-                  // প্রোডাক্ট গ্রিড
+                  // ৫. প্রোডাক্ট গ্রিড
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
                     child: productProvider.isLoading
@@ -101,7 +98,7 @@ class _CustomerWebScreenState extends State<CustomerWebScreen> {
                     ),
                   ),
 
-                  // ৩. নতুন ফুটার
+                  // ৬. ফুটার
                   const CustomerWebFooter(),
                 ],
               ),

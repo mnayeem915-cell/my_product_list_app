@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/product_provider.dart';
-import '../../providers/category_provider.dart';
-import '../../models/product_model.dart';
+import '../../../providers/product_provider.dart';
+import '../../../providers/category_provider.dart';
+import '../../../models/product_model.dart';
 
 class AddProductWebScreen extends StatefulWidget {
   const AddProductWebScreen({super.key});
@@ -22,13 +22,14 @@ class _AddProductWebScreenState extends State<AddProductWebScreen> {
   void _saveProduct() async {
     if (_formKey.currentState!.validate()) {
       final newProduct = Product(
-        id: '', // ডেটাবেস নিজে তৈরি করবে
+        id: '',
+        vendorId: null, // এখানে null দিলাম, কারণ Supabase-এ সেভ করার সময় আমরা user.id পাঠাচ্ছি
         name: _nameController.text,
         description: _descriptionController.text,
         price: double.parse(_priceController.text),
         imageUrl: _imageUrlController.text,
         category: _selectedCategory!,
-        shopName: 'My Shop', // ভবিষ্যতে ভেন্ডরের নাম আসবে
+        shopName: 'My Shop',
         rating: 0.0,
       );
 

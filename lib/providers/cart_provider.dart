@@ -30,10 +30,8 @@ class CartProvider extends ChangeNotifier {
   // কার্টে নতুন প্রোডাক্ট যোগ করা
   void addToCart(Product product) {
     if (_cartItems.containsKey(product.id)) {
-      // যদি আগে থেকেই থাকে, তবে পরিমাণ ১ বাড়বে
       _cartItems[product.id]!.quantity += 1;
     } else {
-      // নতুন হলে ১টি দিয়ে শুরু হবে
       _cartItems[product.id] = CartItem(product: product, quantity: 1);
     }
     notifyListeners();
@@ -54,7 +52,6 @@ class CartProvider extends ChangeNotifier {
         _cartItems[productId]!.quantity -= 1;
         notifyListeners();
       } else {
-        // যদি ১টা থাকে এবং আরও কমাতে চায়, তবে রিমুভ করে দেবে
         removeFromCart(productId);
       }
     }
@@ -63,6 +60,12 @@ class CartProvider extends ChangeNotifier {
   // কার্ট থেকে সম্পূর্ণ বাদ দেওয়া
   void removeFromCart(String productId) {
     _cartItems.remove(productId);
+    notifyListeners();
+  }
+
+  // 👇 নতুন ফাংশন: পুরো কার্ট খালি করা (চেকআউটের পর)
+  void clearCart() {
+    _cartItems.clear();
     notifyListeners();
   }
 }

@@ -14,8 +14,9 @@ import 'providers/banner_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/order_provider.dart';
 import 'screens/main_screen.dart';
-import 'screens/web/customer/customer_web_screen.dart';
-import 'screens/web/vendor/vendor_dashboard_screen.dart'; // ভেন্ডর ড্যাশবোর্ডের পাথ
+import 'web/customer/customer_web_screen.dart';
+import 'web/vendor/vendor_dashboard_screen.dart'; // ভেন্ডর ড্যাশবোর্ডের পাথ
+import 'web/admin/admin_dashboard_screen.dart'; // অ্যাডমিন ইম্পোর্ট
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -67,8 +68,10 @@ class MyApp extends StatelessWidget {
           ? (authProvider.isLoggedIn
           ? (authProvider.userRole == 'vendor'
           ? const VendorDashboardScreen()
+          : authProvider.userRole == 'admin'
+          ? const AdminDashboardScreen() // অ্যাডমিন হলে এখানে যাবে
+          : const CustomerWebScreen()) // নাহলে কাস্টমার
           : const CustomerWebScreen())
-          : const CustomerWebScreen()) // লগইন না থাকলে কাস্টমার ওয়েব
           : const MainScreen(), // মোবাইলে কাস্টমার অ্যাপ
     );
   }

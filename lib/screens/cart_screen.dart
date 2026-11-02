@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/cart_provider.dart';
+import '../../providers/cart_provider.dart';
+import '../../providers/order_provider.dart';
 import 'order_success_screen.dart';
-import '../providers/order_provider.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -34,7 +34,6 @@ class CartScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               itemCount: cart.cartItems.length,
               itemBuilder: (context, index) {
-                // ম্যাপ থেকে আইটেমগুলোকে লিস্টে নিচ্ছি
                 final cartItem = cart.cartItems.values.toList()[index];
                 final product = cartItem.product;
 
@@ -54,7 +53,6 @@ class CartScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      // ছবি
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Image.network(
@@ -69,61 +67,33 @@ class CartScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-
-                      // বিবরণ
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              product.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
+                            Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 4),
-                            Text(
-                              '৳${product.price.toStringAsFixed(0)}',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-                            ),
+                            Text('৳${product.price.toStringAsFixed(0)}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
                             const SizedBox(height: 8),
-
-                            // Quantity (+ / -) বাটন
                             Row(
                               children: [
-                                // মাইনাস বাটন
                                 InkWell(
-                                  onTap: () {
-                                    cart.decreaseQuantity(product.id);
-                                  },
+                                  onTap: () => cart.decreaseQuantity(product.id),
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey.shade300),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
+                                    decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(4)),
                                     child: Icon(Icons.remove, size: 16, color: Colors.grey.shade700),
                                   ),
                                 ),
-                                // পরিমাণ
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                                  child: Text(
-                                    cartItem.quantity.toString().padLeft(2, '0'),
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                  ),
+                                  child: Text(cartItem.quantity.toString().padLeft(2, '0'), style: const TextStyle(fontWeight: FontWeight.bold)),
                                 ),
-                                // প্লাস বাটন
                                 InkWell(
-                                  onTap: () {
-                                    cart.increaseQuantity(product.id);
-                                  },
+                                  onTap: () => cart.increaseQuantity(product.id),
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey.shade300),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
+                                    decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(4)),
                                     child: Icon(Icons.add, size: 16, color: Colors.grey.shade700),
                                   ),
                                 ),
@@ -132,13 +102,9 @@ class CartScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-
-                      // ডিলিট বাটন
                       IconButton(
                         icon: const Icon(Icons.delete_outline, color: Colors.red),
-                        onPressed: () {
-                          cart.removeFromCart(product.id);
-                        },
+                        onPressed: () => cart.removeFromCart(product.id),
                       ),
                     ],
                   ),
@@ -146,16 +112,12 @@ class CartScreen extends StatelessWidget {
               },
             ),
           ),
-
-          // চেকআউট অংশ
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))
-              ],
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))],
             ),
             child: Column(
               children: [
@@ -163,10 +125,7 @@ class CartScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Total Price', style: TextStyle(fontSize: 16, color: Colors.grey)),
-                    Text(
-                      '৳${cart.totalPrice.toStringAsFixed(0)}',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-                    ),
+                    Text('৳${cart.totalPrice.toStringAsFixed(0)}', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -174,25 +133,34 @@ class CartScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
+                    // 👇 চেকআউট বাটনে নতুন লজিক
                     onPressed: () async {
                       if (cart.itemCount > 0) {
-                        // অর্ডার প্লেস করা
-                        final success = await Provider.of<OrderProvider>(context, listen: false)
-                            .placeOrder(cart.totalPrice);
+                        // কার্টের আইটেমগুলো ম্যাপে রূপান্তর করছি
+                        List<Map<String, dynamic>> orderItems = [];
+                        cart.cartItems.forEach((key, cartItem) {
+                          orderItems.add({
+                            'product_id': cartItem.product.id,
+                            'vendor_id': cartItem.product.vendorId, // এখন কাজ করবে
+                            'quantity': cartItem.quantity,
+                            'price': cartItem.product.price,
+                          });
+                        });
+
+                        final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+                        final navigator = Navigator.of(context);
+                        final messenger = ScaffoldMessenger.of(context);
+
+                        final success = await orderProvider.placeOrder(cart.totalPrice, orderItems);
 
                         if (success) {
-                          // কার্ট খালি করা
-                          cart.cartItems.clear();
-                          cart.notifyListeners();
+                          cart.clearCart(); // 👈 কার্ট খালি করা
 
-                          if (context.mounted) {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => const OrderSuccessScreen()),
-                            );
-                          }
+                          navigator.pushReplacement(
+                            MaterialPageRoute(builder: (context) => const OrderSuccessScreen()),
+                          );
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          messenger.showSnackBar(
                             const SnackBar(content: Text('Failed to place order. Try again.'), backgroundColor: Colors.red),
                           );
                         }

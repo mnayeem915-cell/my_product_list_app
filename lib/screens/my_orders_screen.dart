@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/order_provider.dart';
+import '../../providers/order_provider.dart';
 
 class MyOrdersScreen extends StatefulWidget {
   const MyOrdersScreen({super.key});
@@ -13,7 +13,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
   @override
   void initState() {
     super.initState();
-    // স্ক্রিন ওপেন হলে অর্ডার লোড করবে
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<OrderProvider>(context, listen: false).fetchMyOrders();
     });
@@ -47,6 +46,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
         itemBuilder: (context, index) {
           final order = orderProvider.myOrders[index];
           final date = DateTime.parse(order['created_at']).toLocal();
+          // order_items থেকে প্রোডাক্টের নাম বের করা
+          final items = order['order_items'] as List? ?? [];
+          final productNames = items.map((item) => item['products']['name']).join(', ');
 
           return Card(
             elevation: 0,
@@ -64,21 +66,21 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                 'Order #${order['id'].toString().substring(0, 8)}',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              subtitle: Text('Date: ${date.day}/${date.month}/${date.year}'),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Date: ${date.day}/${date.month}/${date.year}'),
+                  Text('Items: $productNames', maxLines: 1, overflow: TextOverflow.ellipsis),
+                ],
+              ),
               trailing: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    '৳${order['total_amount']}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+                  Text('৳${order['total_amount']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   Text(
                     order['status'] ?? 'Pending',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: order['status'] == 'Pending' ? Colors.orange : Colors.green,
-                    ),
+                    style: TextStyle(fontSize: 12, color: order['status'] == 'Pending' ? Colors.orange : Colors.green),
                   ),
                 ],
               ),

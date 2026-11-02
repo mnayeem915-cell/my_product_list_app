@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
-import '../../../providers/category_provider.dart'; // ক্যাটাগরির জন্য
 import '../login_web_screen.dart';
 
 class CustomerWebHeader extends StatelessWidget {
@@ -10,7 +9,6 @@ class CustomerWebHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final categoryProvider = Provider.of<CategoryProvider>(context);
 
     return Column(
       children: [
@@ -63,7 +61,6 @@ class CustomerWebHeader extends StatelessWidget {
               const SizedBox(width: 40),
 
               // ডান দিকের আইকনগুলো (Track Order, Sign In, Wishlist, Cart, More)
-              _buildHeaderIcon(Icons.location_on_outlined, 'Track Order', () {}),
 
               // লগইন/লগআউট
               if (authProvider.isLoggedIn)
@@ -77,32 +74,6 @@ class CustomerWebHeader extends StatelessWidget {
               _buildHeaderIcon(Icons.shopping_cart_outlined, 'Cart', () {}),
               _buildHeaderIcon(Icons.menu, 'More', () {}),
             ],
-          ),
-        ),
-
-        // ==========================================
-        // ২. নিচের অংশ (ক্যাটাগরি মেনু বার)
-        // ==========================================
-        Container(
-          color: const Color(0xFF2E2E2E), // গাঢ় ধূসর/কালো (ঘরের বাজার স্টাইল)
-          height: 50,
-          child: categoryProvider.categories.isEmpty
-              ? const Center(child: Text('Loading Categories...', style: TextStyle(color: Colors.white)))
-              : ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            itemCount: categoryProvider.categories.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Center(
-                  child: Text(
-                    categoryProvider.categories[index].name,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14),
-                  ),
-                ),
-              );
-            },
           ),
         ),
       ],

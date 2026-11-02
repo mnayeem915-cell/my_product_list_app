@@ -9,30 +9,55 @@ class ProductProvider extends ChangeNotifier {
   List<Product> get products => _products;
   bool get isLoading => _isLoading;
 
+  // ১. গ্রাহকদের জন্য সব প্রোডাক্ট লোড করা (হোম স্ক্রিনের জন্য)
   Future<void> fetchProducts() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      // এখানে order('created_at') সরিয়ে দিলাম, শুধু select() রাখলাম
       final response = await Supabase.instance.client
           .from('products')
-          .select();
-
-      print("Supabase Response: $response"); // ডেটা আসছে কিনা টার্মিনালে দেখার জন্য
+          .select()
+          .order('created_at', ascending: false);
 
       _products = (response as List).map((json) => Product.fromJson(json)).toList();
     } catch (e) {
-      print("Error fetching products: $e"); // এরর টার্মিনালে দেখার জন্য
+      debugPrint('Error fetching products: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  // নতুন প্রোডাক্ট ডেটাবেসে যোগ করা
+  // ২. ভেন্ডরের নিজের প্রোডাক্ট লোড করা (ভেন্ডর ড্যাশবোর্ডের জন্য)
+  Future<void> fetchVendorProducts() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+
+      final response = await Supabase.instance.client
+          .from('products')
+          .select()
+          .eq('vendor_id', user.id) // শুধু এই ভেন্ডরের প্রোডাক্ট
+          .order('created_at', ascending: false);
+
+      _products = (response as List).map((json) => Product.fromJson(json)).toList();
+    } catch (e) {
+      debugPrint('Error fetching vendor products: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ৩. নতুন প্রোডাক্ট অ্যাড করা
   Future<void> addProduct(Product product) async {
     try {
+      final user = Supabase.instance.client.auth.currentUser;
+
       await Supabase.instance.client.from('products').insert({
         'name': product.name,
         'description': product.description,
@@ -41,8 +66,11 @@ class ProductProvider extends ChangeNotifier {
         'category': product.category,
         'shop_name': product.shopName,
         'rating': product.rating,
+        'vendor_id': user?.id, // ভেন্ডরের আইডি সেভ করা
       });
-      await fetchProducts(); // নতুন প্রোডাক্ট যোগ হওয়ার পর আবার লিস্ট আপডেট হবে
+
+      // অ্যাড হওয়ার পর আবার লিস্ট আপডেট করা
+      await fetchVendorProducts();
     } catch (e) {
       debugPrint('Error adding product: $e');
     }
