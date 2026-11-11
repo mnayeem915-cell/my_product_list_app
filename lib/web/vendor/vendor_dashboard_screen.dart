@@ -3,10 +3,13 @@ import 'package:provider/provider.dart';
 import '../../../providers/product_provider.dart';
 import '../../../providers/auth_provider.dart';
 import 'add_product_web_screen.dart';
-import 'vendor_orders_screen.dart'; // নতুন স্ক্রিনের ইম্পোর্ট
+import 'vendor_orders_screen.dart'; // অর্ডার স্ক্রিন
+import '../../../providers/category_provider.dart';
 
 class VendorDashboardScreen extends StatefulWidget {
-  const VendorDashboardScreen({super.key});
+  final String? viewAsAdminId; // অ্যাডমিনের জন্য প্যারামিটার
+
+  const VendorDashboardScreen({super.key, this.viewAsAdminId});
 
   @override
   State<VendorDashboardScreen> createState() => _VendorDashboardScreenState();
@@ -17,7 +20,15 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ProductProvider>(context, listen: false).fetchVendorProducts();
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      // অ্যাডমিন হিসেবে এলে প্যারামিটার থেকে আইডি, নাহলে লগইন করা ভেন্ডরের আইডি
+      final targetVendorId = widget.viewAsAdminId ?? authProvider.currentUser?.id;
+
+      if (targetVendorId != null) {
+        // 👇 নতুন ফাংশন ব্যবহার করছি
+        Provider.of<ProductProvider>(context, listen: false).fetchProductsByVendor(targetVendorId);
+      }
     });
   }
 
@@ -25,18 +36,25 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final productProvider = Provider.of<ProductProvider>(context);
+    final categoryProvider = Provider.of<CategoryProvider>(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
+        leading: widget.viewAsAdminId != null
+            ? IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context), // অ্যাডমিন প্যানেলে ফিরে যাবে
+        )
+            : null,
         title: Row(
           children: [
             Icon(Icons.shopping_bag, color: Theme.of(context).primaryColor, size: 30),
             const SizedBox(width: 8),
             Text(
-              'Vendor Dashboard',
+              widget.viewAsAdminId != null ? 'Vendor Store (Admin View)' : 'Vendor Dashboard',
               style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 20),
             ),
           ],
@@ -48,7 +66,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
             icon: const Icon(Icons.logout, color: Colors.red),
             onPressed: () async {
               await authProvider.logout();
-              if (mounted) Navigator.pop(context);
+              if (context.mounted) Navigator.pop(context);
             },
           ),
           const SizedBox(width: 20),
@@ -78,6 +96,36 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                 const Text('My Products', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 Row(
                   children: [
+                    // প্রোডাক্ট হেডিং এর পাশে:
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        final textController = TextEditingController();
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Add New Category'),
+                            content: TextField(controller: textController, decoration: const InputDecoration(labelText: 'Category Name')),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final vendorId = widget.viewAsAdminId ?? authProvider.currentUser?.id;
+                                  if (vendorId != null) {
+                                    await categoryProvider.addCategoryByVendor(textController.text, vendorId);
+                                    if(context.mounted) Navigator.pop(context);
+                                  }
+                                },
+                                child: const Text('Add'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.category),
+                      label: const Text('Add Category'),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                    ),
+
                     // My Orders বাটন
                     ElevatedButton.icon(
                       onPressed: () async {
@@ -96,7 +144,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    // Add Product বাটন (এখানে BuildContext ওয়ার্নিং ঠিক করা হলো)
+                    // Add Product বাটন
                     ElevatedButton.icon(
                       onPressed: () async {
                         final productProvider = Provider.of<ProductProvider>(context, listen: false);
@@ -106,7 +154,11 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                           MaterialPageRoute(builder: (context) => const AddProductWebScreen()),
                         );
 
-                        productProvider.fetchVendorProducts();
+                        // ফিরে আসার পর রিফ্রেশ (BuildContext ওয়ার্নিং এড়াতে navigator এর বদলে সরাসরি provider কল করছি)
+                        final targetVendorId = widget.viewAsAdminId ?? authProvider.currentUser?.id;
+                        if (targetVendorId != null) {
+                          productProvider.fetchProductsByVendor(targetVendorId);
+                        }
                       },
                       icon: const Icon(Icons.add),
                       label: const Text('Add New Product'),

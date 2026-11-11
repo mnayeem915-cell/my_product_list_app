@@ -29,6 +29,19 @@ class CategoryProvider extends ChangeNotifier {
     }
   }
 
+  // নতুন ক্যাটাগরি যোগ করা (শুধু এই ভেন্ডরের জন্য)
+  Future<void> addCategoryByVendor(String name, String vendorId) async {
+    try {
+      await Supabase.instance.client.from('categories').insert({
+        'name': name,
+        'vendor_id': vendorId,
+      });
+      await fetchCategories(); // লিস্ট আপডেট
+    } catch (e) {
+      debugPrint('Error adding category: $e');
+    }
+  }
+
   // নতুন ক্যাটাগরি যোগ করা (ভবিষ্যতে অ্যাডমিন প্যানেল থেকে কাজে লাগবে)
   Future<void> addCategory(String name) async {
     try {

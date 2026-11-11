@@ -52,8 +52,9 @@ class AuthProvider extends ChangeNotifier {
 
         if (response != null) {
           _userRole = response['role'] ?? 'customer';
+          print('Fetched Role: $_userRole'); // 👈 টার্মিনালে চেক করার জন্য
         } else {
-          // যদি নতুন ইউজার হয়, তবে users টেবিলে তাকে সেভ করে নেবে
+          // নতুন ইউজার হলে ডিফল্ট কাস্টমার হিসেবে সেভ করো
           await _supabase.from('users').insert({
             'id': user.id,
             'email': user.email,

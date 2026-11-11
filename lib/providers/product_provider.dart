@@ -9,7 +9,7 @@ class ProductProvider extends ChangeNotifier {
   List<Product> get products => _products;
   bool get isLoading => _isLoading;
 
-  // ১. গ্রাহকদের জন্য সব প্রোডাক্ট লোড করা (হোম স্ক্রিনের জন্য)
+  // ১. সব প্রোডাক্ট লোড করা (কাস্টমারদের জন্য)
   Future<void> fetchProducts() async {
     _isLoading = true;
     notifyListeners();
@@ -29,19 +29,16 @@ class ProductProvider extends ChangeNotifier {
     }
   }
 
-  // ২. ভেন্ডরের নিজের প্রোডাক্ট লোড করা (ভেন্ডর ড্যাশবোর্ডের জন্য)
-  Future<void> fetchVendorProducts() async {
+  // ২. নির্দিষ্ট ভেন্ডরের প্রোডাক্ট লোড করা (ভেন্ডর ড্যাশবোর্ডের জন্য)
+  Future<void> fetchProductsByVendor(String vendorId) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) return;
-
       final response = await Supabase.instance.client
           .from('products')
           .select()
-          .eq('vendor_id', user.id) // শুধু এই ভেন্ডরের প্রোডাক্ট
+          .eq('vendor_id', vendorId)
           .order('created_at', ascending: false);
 
       _products = (response as List).map((json) => Product.fromJson(json)).toList();
@@ -66,11 +63,10 @@ class ProductProvider extends ChangeNotifier {
         'category': product.category,
         'shop_name': product.shopName,
         'rating': product.rating,
-        'vendor_id': user?.id, // ভেন্ডরের আইডি সেভ করা
+        'vendor_id': user?.id,
       });
 
-      // অ্যাড হওয়ার পর আবার লিস্ট আপডেট করা
-      await fetchVendorProducts();
+      await fetchProductsByVendor(user!.id);
     } catch (e) {
       debugPrint('Error adding product: $e');
     }

@@ -8,6 +8,17 @@ class BannerProvider extends ChangeNotifier {
   List<String> get bannerUrls => _bannerUrls;
   bool get isLoading => _isLoading;
 
+  Future<void> addBanner(String imageUrl) async {
+    try {
+      await Supabase.instance.client.from('banners').insert({
+        'image_url': imageUrl,
+      });
+      await fetchBanners();
+    } catch (e) {
+      debugPrint('Error adding banner: $e');
+    }
+  }
+
   Future<void> fetchBanners() async {
     _isLoading = true;
     notifyListeners();

@@ -20,10 +20,18 @@ class _LoginWebScreenState extends State<LoginWebScreen> {
 
     final error = await authProvider.login(_emailController.text.trim(), _passwordController.text.trim());
 
+    if (error == null) {
+      // 👇 লগইন সফল হলে সাথে সাথে রোলটা ফেচ করবো
+      await authProvider.fetchUserRole();
+    }
+
     setState(() => _isLoading = false);
 
     if (error == null) {
-      if (mounted) Navigator.pop(context); // লগইন সফল হলে ফিরে যাবে
+      if (mounted) {
+        // রোল লোড হওয়ার পর main.dart অটোমেটিক্যালি রিফ্রেশ হবে
+        Navigator.pop(context);
+      }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error), backgroundColor: Colors.red));

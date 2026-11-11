@@ -1,4 +1,4 @@
-import 'dart:async'; // 👈 টাইমারের জন্য
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -14,16 +14,14 @@ class CustomerWebBanner extends StatefulWidget {
 class _CustomerWebBannerState extends State<CustomerWebBanner> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
-  Timer? _timer; // 👈 টাইমার ভেরিয়েবল
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    // ৩ সেকেন্ড পর পর অটোমেটিক স্লাইড হবে
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (_pageController.hasClients) {
         int next = _currentIndex + 1;
-        // শেষ ছবি হলে আবার প্রথম ছবিতে ফিরে যাবে
         if (next == Provider.of<BannerProvider>(context, listen: false).bannerUrls.length) {
           next = 0;
         }
@@ -38,7 +36,7 @@ class _CustomerWebBannerState extends State<CustomerWebBanner> {
 
   @override
   void dispose() {
-    _timer?.cancel(); // স্ক্রিন বন্ধ হলে টাইমার বন্ধ হবে
+    _timer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -53,7 +51,6 @@ class _CustomerWebBannerState extends State<CustomerWebBanner> {
       padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
       child: Row(
         children: [
-          // ১. বাম দিকের স্লাইডার ব্যানার
           Expanded(
             flex: 2,
             child: Column(
@@ -71,7 +68,7 @@ class _CustomerWebBannerState extends State<CustomerWebBanner> {
                           bannerProvider.bannerUrls[index],
                           width: double.infinity,
                           height: 350,
-                          fit: BoxFit.cover, // পুরো জায়গা জুড়ে বসবে
+                          fit: BoxFit.cover,
                         ),
                       );
                     },
@@ -87,17 +84,15 @@ class _CustomerWebBannerState extends State<CustomerWebBanner> {
             ),
           ),
           const SizedBox(width: 20),
-
-          // ২. ডান দিকের স্থির (Static) ব্যানার
           Expanded(
             flex: 1,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.network(
-                'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=600&auto=format&fit=crop', // 👈 নতুন লিংক
+                'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=600&auto=format&fit=crop',
                 height: 380,
                 width: double.infinity,
-                fit: BoxFit.cover, // ডান দিকের ছবিটাও সুন্দরভাবে বসবে
+                fit: BoxFit.cover,
               ),
             ),
           ),
